@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Grammatik: Possessivadjektive</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .explanation {
+            background: #eef2f3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .task-block {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .task-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Styling für die Eingabefelder */
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none; /* Entfernt Standard-Pfeil für einheitliches Design */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        /* Zustände */
+        .correct-field {
+            border-color: var(--success-color) !important;
+            background-color: #d4edda !important;
+            color: #155724 !important;
+        }
+
+        .incorrect-field {
+            border-color: var(--error-color) !important;
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+        }
+
+        .btn-group {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solution { background-color: var(--secondary-color); }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: Possessivadjektive</h1>
+    
+    <div class="explanation">
+        <h3>Kurzanleitung</h3>
+        <p>Bildung basierend auf dem <strong>Genitiv Singular</strong>:</p>
+        <ul>
+            <li>Genitiv auf <strong>-А</strong> &rarr; <strong>-ОВ-</strong> (Иван &rarr; Ивана &rarr; Иванов)</li>
+            <li>Genitiv auf <strong>-Я</strong> (unbetont) &rarr; <strong>-ЕВ-</strong> (Андрей &rarr; Андрея &rarr; Андреев)</li>
+            <li>Genitiv auf <strong>-Я</strong> (betont) &rarr; <strong>-ЁВ-</strong> (Соловей &rarr; Соловья &rarr; Соловьёв)</li>
+        </ul>
+        <p><em>Hinweis: Wählen Sie die richtige Option aus. Das Feld färbt sich sofort grün oder rot.</em></p>
+    </div>
+
+    <div id="quiz-container"></div>
+</div>
+
+<script>
+    const exercises = [
+        { id: 1, q: "1. Suffix für 'Антон' (Genitiv: Антона):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ОВ-" },
+        { id: 2, q: "2. Suffix für 'Алексей' (Genitiv: Алексея, unbetont):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ЕВ-" },
+        { id: 3, q: "3. Suffix für 'Воробей' (Genitiv: Воробья, betont):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ЁВ-" },
+        { id: 4, q: "4. Form von 'Павел' (Genitiv: Павла):", options: ["--", "Павелов", "Павлов", "Павлев"], a: "Павлов" },
+        { id: 5, q: "5. Form von 'Пётр' (Genitiv: Петра):", options: ["--", "Пётров", "Петров", "Петрев"], a: "Петров" },
+        { id: 6, q: "6. 'Viktors Buch' &rarr; Виктор____ книга", options: ["--", "ова", "ева", "ёва"], a: "ова" },
+        { id: 7, q: "7. 'Sergejs Haus' &rarr; Серге____ дом", options: ["--", "ов", "ев", "ёв"], a: "ев" },
+        { id: 8, q: "8. 'Nachtigall-Söhne' (Соловей, Genitiv: Соловья, betont):", options: ["--", "овы", "евы", "ёвы"], a: "ёвы" },
+        { id: 9, q: "9. Suffix für 'Игорь' (Genitiv: Игоря, unbetont):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ЕВ-" },
+        { id: 10, q: "10. 'Vaters Brief' (Отец, Genitiv: Отца):", options: ["--", "Отцово", "Отцево", "Отцёво"], a: "Отцово" },
+        { id: 11, q: "11. 'Die Ferse des Achilles' &rarr; Ахиллес____ пята", options: ["--", "ова", "ева", "ёва"], a: "ова" },
+        { id: 12, q: "12. Nachname von 'Никита Гончар' (Genitiv: Гончара):", options: ["--", "Гончарев", "Гончаров", "Гончарёв"], a: "Гончаров" },
+        { id: 13, q: "13. Adjektiv von 'Цезарь' (Genitiv: Цезаря, unbetont):", options: ["--", "Цезарев", "Цезаров", "Цезарёв"], a: "Цезарев" },
+        { id: 14, q: "14. 'Boris' Telefon' (Борис, Genitiv: Бориса):", options: ["--", "Борисов", "Борисев", "Борисёв"], a: "Борисов" },
+        { id: 15, q: "15. 'Ameisen-Arbeit' (Муравей, Genitiv: Муравья, betont):", options: ["--", "Муравьева", "Муравьёва", "Муравова"], a: "Муравьёва" },
+        { id: 16, q: "16. Suffix für 'Михаил' (Genitiv: Михаила):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ОВ-" },
+        { id: 17, q: "17. 'Das Nest der Gans' (Гусь, Genitiv: Гуся, unbetont):", options: ["--", "Гусево", "Гусово", "Гусёво"], a: "Гусево" },
+        { id: 18, q: "18. Suffix für 'Дед' (Opa, Genitiv: Деда):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ОВ-" },
+        { id: 19, q: "19. Welcher Name führt zu '-ЕВ-'?", options: ["--", "Иван", "Андрей", "Соловей"], a: "Андрей" },
+        { id: 20, q: "20. Suffix für 'Николай' (Genitiv: Николая, unbetont):", options: ["--", "-ОВ-", "-ЕВ-", "-ЁВ-"], a: "-ЕВ-" }
+    ];
+
+    const container = document.getElementById('quiz-container');
+
+    exercises.forEach(ex => {
+        const div = document.createElement('div');
+        div.className = 'task-block';
+        div.innerHTML = `
+            <span class="task-title">${ex.q}</span>
+            <select id="input-${ex.id}" onchange="validate(${ex.id})">
+                ${ex.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+            </select>
+            <div class="btn-group">
+                <button class="btn-reset" onclick="reset(${ex.id})">Zurücksetzen</button>
+                <button class="btn-solution" onclick="solve(${ex.id})">Lösung anzeigen</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    window.validate = function(id) {
+        const field = document.getElementById(`input-${id}`);
+        const exercise = exercises.find(e => e.id === id);
+        
+        if (field.value === "--") {
+            field.className = "";
+            return;
+        }
+
+        if (field.value === exercise.a) {
+            field.className = "correct-field";
+        } else {
+            field.className = "incorrect-field";
+        }
+    };
+
+    window.reset = function(id) {
+        const field = document.getElementById(`input-${id}`);
+        field.value = "--";
+        field.className = "";
+    };
+
+    window.solve = function(id) {
+        const field = document.getElementById(`input-${id}`);
+        const exercise = exercises.find(e => e.id === id);
+        field.value = exercise.a;
+        field.className = "correct-field";
+    };
+</script>
+
+</body>
+</html>
