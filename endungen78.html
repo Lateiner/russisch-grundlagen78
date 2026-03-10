@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endungs-Anpassung: Russisch Possessivadjektive</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 1em;
+            line-height: 1.5;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .exercise-item {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: 20px 10px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 1.2em;
+        }
+
+        .sentence-part {
+            white-space: nowrap;
+        }
+
+        .adjective-base {
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 4px 0 0 4px;
+        }
+
+        select {
+            padding: 5px 10px;
+            font-size: 1em;
+            font-weight: bold;
+            border: 2px solid var(--secondary-color);
+            border-radius: 0 4px 4px 0;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--secondary-color);
+            outline: none;
+        }
+
+        /* Feedback-Klassen */
+        .correct-select {
+            border-color: var(--success-color) !important;
+            background-color: #d4edda !important;
+            color: #155724 !important;
+        }
+
+        .incorrect-select {
+            border-color: var(--error-color) !important;
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .main-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solution { background-color: var(--secondary-color); }
+        .main-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .exercise-item { font-size: 1em; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Endungs-Anpassung</h1>
+
+    <div class="instruction">
+        <strong>Aufgabe:</strong> Das Possessivadjektiv muss wie ein normales Adjektiv an das Bezugswort angepasst werden. 
+        Wählen Sie die richtige Endung aus:
+        <br><strong>-∅</strong> (maskulin), <strong>-а</strong> (feminin), <strong>-о</strong> (neutral) oder <strong>-ы</strong> (plural).
+    </div>
+
+    <div id="exercise-container">
+        <!-- Inhalte werden per JS geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="main-btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="main-btn btn-solution" onclick="showAllSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const data = [
+        { id: 1, start: "Это Павлов", end: "письмо (n).", correct: "о" },
+        { id: 2, start: "Где Антонов", end: "книга (f)?", correct: "а" },
+        { id: 3, start: "Это Сергеев", end: "словарь (m).", correct: "∅" },
+        { id: 4, start: "Тут Андреев", end: "вещи (pl).", correct: "ы" },
+        { id: 5, start: "Это Отцов", end: "машина (f).", correct: "а" },
+        { id: 6, start: "Я вижу Петров", end: "дом (m).", correct: "∅" },
+        { id: 7, start: "Это Соловьёв", end: "гнездо (n).", correct: "о" },
+        { id: 8, start: "Где Борисов", end: "ключи (pl)?", correct: "ы" },
+        { id: 9, start: "Это Игорев", end: "кресло (n).", correct: "о" },
+        { id: 10, start: "Вот Алексеев", end: "собака (f).", correct: "а" }
+    ];
+
+    const options = ["--", "∅", "а", "о", "ы"];
+
+    function init() {
+        const container = document.getElementById('exercise-container');
+        container.innerHTML = '';
+        
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'exercise-item';
+            div.innerHTML = `
+                <span class="sentence-part">${item.start}</span>
+                <select id="sel-${item.id}" onchange="validate(${item.id})">
+                    ${options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                </select>
+                <span class="sentence-part">${item.end}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    window.validate = function(id) {
+        const sel = document.getElementById(`sel-${id}`);
+        const exercise = data.find(item => item.id === id);
+        
+        if (sel.value === "--") {
+            sel.className = "";
+            return;
+        }
+
+        if (sel.value === exercise.correct) {
+            sel.className = "correct-select";
+        } else {
+            sel.className = "incorrect-select";
+        }
+    };
+
+    window.resetAll = function() {
+        init();
+    };
+
+    window.showAllSolutions = function() {
+        data.forEach(item => {
+            const sel = document.getElementById(`sel-${item.id}`);
+            sel.value = item.correct;
+            sel.className = "correct-select";
+        });
+    };
+
+    init();
+</script>
+
+</body>
+</html>
