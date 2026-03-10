@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fehler-Detektiv (10 Fehler): Russisch Possessivadjektive</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .text-area {
+            font-size: 1.2rem;
+            line-height: 2.2;
+            padding: 25px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+
+        .word-interactive {
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            border-bottom: 2px solid #3498db;
+            transition: all 0.2s;
+            display: inline-block;
+            position: relative;
+            background-color: #fcfcfc;
+            font-weight: 500;
+        }
+
+        .word-interactive:hover {
+            background-color: #e8f4fd;
+        }
+
+        /* Statusfarben */
+        .is-correct {
+            color: var(--success-color);
+            border-bottom: 2px solid var(--success-color);
+            background-color: #f0fff4 !important;
+        }
+
+        .is-wrong {
+            color: var(--error-color);
+            border-bottom: 2px solid var(--error-color);
+            background-color: #fff5f5 !important;
+        }
+
+        /* Das Auswahl-Menü */
+        .correction-menu {
+            position: absolute;
+            top: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: none;
+            border-radius: 6px;
+            min-width: 140px;
+            overflow: hidden;
+        }
+
+        .correction-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+
+        .correction-option:last-child {
+            border-bottom: none;
+        }
+
+        .correction-option:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .main-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solution { background-color: var(--secondary-color); }
+        .main-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 650px) {
+            .text-area { font-size: 1.1em; line-height: 2.4; padding: 15px; }
+            .container { padding: 15px; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Fehler-Detektiv: 10 Fehler</h1>
+
+    <div class="instruction">
+        <strong>Aufgabe:</strong> In der Geschichte unten sind 10 Possessivadjektive falsch gebildet (falsches Suffix, vergessener flüchtiger Vokal oder falsche Endung). 
+        Klicken Sie auf die unterstrichenen Wörter und wählen Sie die richtige Form aus.
+    </div>
+
+    <div class="text-area" id="text-container">
+        <!-- Der Text wird hier dynamisch generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="main-btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="main-btn btn-solution" onclick="showAll()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Datenstruktur für den Text und die Fehler
+    const textSegments = [
+        { t: "Привет! Сегодня я в гостях. Это " },
+        { id: 0, current: "Павелов", correct: "Павлов", opts: ["Павелов", "Павлев", "Павлов"] }, // Fehler 1: Flüchtiger Vokal
+        { t: " дом. На вешалке висит " },
+        { id: 1, current: "Иванов", correct: "Иванова", opts: ["Иванов", "Иванова", "Иванове"] }, // Fehler 2: Endung (fem.)
+        { t: " куртка. Я не знаю, где " },
+        { id: 2, current: "Андрейов", correct: "Андреев", opts: ["Андрейов", "Андреев", "Андреёв"] }, // Fehler 3: Suffix -ЕВ
+        { t: " телефон. На столе лежит " },
+        { id: 3, current: "Сергеёво", correct: "Сергеево", opts: ["Сергеёво", "Сергеево", "Сергейово"] }, // Fehler 4: Suffix -ЕВ (unbetont)
+        { t: " письмо. Из окна я вижу " },
+        { id: 4, current: "Пётров", correct: "Петров", opts: ["Пётров", "Петрев", "Петров"] }, // Fehler 5: Flüchtiger Vokal / Ё
+        { t: " сад. У забора стоит " },
+        { id: 5, current: "Отцева", correct: "Отцова", opts: ["Отцева", "Отцова", "Отцёва"] }, // Fehler 6: O nach Ц
+        { t: " машина. В комнате есть " },
+        { id: 6, current: "Игоров", correct: "Игорев", opts: ["Игоров", "Игорев", "Игорёв"] }, // Fehler 7: Suffix -ЕВ
+        { t: " кабинет. На дереве висит " },
+        { id: 7, current: "Соловево", correct: "Соловьёво", opts: ["Соловево", "Соловьево", "Соловьёво"] }, // Fehler 8: Weichheitszeichen / Ё
+        { t: " гнездо. Где " },
+        { id: 8, current: "Николаева", correct: "Николаевы", opts: ["Николаева", "Николаевы", "Николаево"] }, // Fehler 9: Plural-Endung
+        { t: " ключи? Я думаю, это " },
+        { id: 9, current: "Борисев", correct: "Борисов", opts: ["Борисев", "Борисов", "Борисёв"] }, // Fehler 10: Suffix -ОВ
+        { t: " рюкзак." }
+    ];
+
+    function renderText() {
+        const container = document.getElementById('text-container');
+        container.innerHTML = '';
+
+        textSegments.forEach(segment => {
+            if (segment.t) {
+                container.appendChild(document.createTextNode(segment.t));
+            } else {
+                const span = document.createElement('span');
+                span.className = 'word-interactive';
+                span.id = `word-${segment.id}`;
+                span.innerText = segment.current;
+                
+                // Menü erstellen
+                const menu = document.createElement('div');
+                menu.className = 'correction-menu';
+                
+                segment.opts.forEach(opt => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'correction-option';
+                    optDiv.innerText = opt;
+                    optDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        handleSelection(segment.id, opt);
+                    };
+                    menu.appendChild(optDiv);
+                });
+
+                span.appendChild(menu);
+                span.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleMenu(segment.id);
+                };
+                container.appendChild(span);
+            }
+        });
+    }
+
+    function toggleMenu(id) {
+        // Alle anderen Menüs schließen
+        document.querySelectorAll('.correction-menu').forEach(m => m.style.display = 'none');
+        
+        const menu = document.querySelector(`#word-${id} .correction-menu`);
+        menu.style.display = 'block';
+    }
+
+    function handleSelection(id, selected) {
+        const wordSpan = document.getElementById(`word-${id}`);
+        const data = textSegments.find(s => s.id === id);
+        
+        // Menü kurz entfernen, Text ändern, Menü wieder rein
+        const menu = wordSpan.querySelector('.correction-menu');
+        wordSpan.innerText = selected;
+        wordSpan.appendChild(menu);
+        menu.style.display = 'none';
+
+        // Validierung
+        if (selected === data.correct) {
+            wordSpan.classList.add('is-correct');
+            wordSpan.classList.remove('is-wrong');
+        } else {
+            wordSpan.classList.add('is-wrong');
+            wordSpan.classList.remove('is-correct');
+        }
+    }
+
+    // Schließen bei Klick irgendwohin
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.correction-menu').forEach(m => m.style.display = 'none');
+    });
+
+    window.resetAll = function() {
+        renderText();
+    };
+
+    window.showAll = function() {
+        textSegments.forEach(segment => {
+            if (segment.id !== undefined) {
+                const wordSpan = document.getElementById(`word-${segment.id}`);
+                const menu = wordSpan.querySelector('.correction-menu');
+                wordSpan.innerText = segment.correct;
+                wordSpan.appendChild(menu);
+                wordSpan.classList.add('is-correct');
+                wordSpan.classList.remove('is-wrong');
+                menu.style.display = 'none';
+            }
+        });
+    };
+
+    // Initialisierung
+    renderText();
+</script>
+
+</body>
+</html>
