@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory: Russisch Possessivadjektive</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-back: #34495e;
+            --card-front: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            height: 100px;
+            cursor: pointer;
+            perspective: 1000px;
+            position: relative;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: absolute;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Wenn ein Paar gefunden wurde, verschwindet es */
+        .card.matched-hidden {
+            opacity: 0;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 5px;
+            box-sizing: border-box;
+            border: 2px solid transparent;
+        }
+
+        .card-back {
+            background-color: var(--card-back);
+            color: white;
+        }
+
+        .card-back::after {
+            content: "?";
+            font-size: 2em;
+            opacity: 0.3;
+        }
+
+        .card-front {
+            background-color: var(--card-front);
+            color: var(--primary-color);
+            transform: rotateY(180deg);
+            border-color: var(--secondary-color);
+        }
+
+        /* Falsches Paar kurz rot markieren */
+        .card.wrong .card-front {
+            border-color: var(--error-color);
+            background-color: #f8d7da;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solution { background-color: var(--secondary-color); }
+        .btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .card { height: 85px; }
+            .card-front { font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Memory: Namen & Adjektive</h1>
+
+    <div class="instruction">
+        <strong>Ziel:</strong> Finden Sie die Paare! Ein richtiges Paar besteht aus dem <strong>Namen</strong> und dem dazugehörigen <strong>Possessivadjektiv</strong>. Gefundene Paare verschwinden vom Feld.
+    </div>
+
+    <div class="memory-grid" id="grid">
+        <!-- Karten werden per JS generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-reset" onclick="initGame()">Spiel neu starten</button>
+        <button class="btn btn-solution" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const pairs = [
+        { name: "Пётр", adj: "Петров" },
+        { name: "Павел", adj: "Павлов" },
+        { name: "Отец", adj: "Отцов" },
+        { name: "Андрей", adj: "Андреев" },
+        { name: "Сергей", adj: "Сергеев" },
+        { name: "Игорь", adj: "Игорев" },
+        { name: "Соловей", adj: "Соловьёв" },
+        { name: "Воробей", adj: "Воробьёв" },
+        { name: "Иван", adj: "Иванов" },
+        { name: "Николай", adj: "Николаев" }
+    ];
+
+    // Farben für die Lösung (10 Paare)
+    const solutionColors = [
+        "#FFD700", "#FF6347", "#ADFF2F", "#00CED1", "#FFA500", 
+        "#DA70D6", "#B0C4DE", "#F08080", "#98FB98", "#FFB6C1"
+    ];
+
+    let flippedCards = [];
+    let lockBoard = false;
+
+    function initGame() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        flippedCards = [];
+        lockBoard = false;
+        
+        let cardData = [];
+        pairs.forEach((p, index) => {
+            cardData.push({ text: p.name, pairId: index });
+            cardData.push({ text: p.adj, pairId: index });
+        });
+
+        // Zufällig mischen
+        cardData.sort(() => Math.random() - 0.5);
+
+        cardData.forEach((data, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.pairId = data.pairId;
+            card.id = `card-${index}`;
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-back"></div>
+                    <div class="card-front">${data.text}</div>
+                </div>
+            `;
+            card.onclick = () => flipCard(card);
+            grid.appendChild(card);
+        });
+    }
+
+    function flipCard(card) {
+        if (lockBoard) return;
+        if (card.classList.contains('flipped') || card.classList.contains('matched-hidden')) return;
+
+        card.classList.add('flipped');
+        flippedCards.push(card);
+
+        if (flippedCards.length === 2) {
+            checkMatch();
+        }
+    }
+
+    function checkMatch() {
+        lockBoard = true;
+        const [card1, card2] = flippedCards;
+
+        if (card1.dataset.pairId === card2.dataset.pairId) {
+            // Erfolg: Kurz anzeigen, dann ausblenden
+            setTimeout(() => {
+                card1.classList.add('matched-hidden');
+                card2.classList.add('matched-hidden');
+                flippedCards = [];
+                lockBoard = false;
+            }, 600);
+        } else {
+            // Fehler: Kurz rot markieren, dann zurückdrehen
+            card1.classList.add('wrong');
+            card2.classList.add('wrong');
+            setTimeout(() => {
+                card1.classList.remove('flipped', 'wrong');
+                card2.classList.remove('flipped', 'wrong');
+                flippedCards = [];
+                lockBoard = false;
+            }, 1000);
+        }
+    }
+
+    window.showSolution = function() {
+        // Zuerst alle Karten wieder einblenden, falls sie schon weg waren
+        document.querySelectorAll('.card').forEach(card => {
+            card.classList.remove('matched-hidden');
+            card.classList.add('flipped');
+            
+            // Paarweise färben
+            const pairId = card.dataset.pairId;
+            const front = card.querySelector('.card-front');
+            front.style.backgroundColor = solutionColors[pairId];
+            front.style.borderColor = "#2c3e50";
+            front.style.color = "#000";
+        });
+    };
+
+    // Spiel beim Laden starten
+    initGame();
+</script>
+
+</body>
+</html>
