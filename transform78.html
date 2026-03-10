@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformation: Russisch Possessivadjektive</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 1em;
+            line-height: 1.5;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .transformation-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .original-phrase {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .target-sentence {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+            color: var(--primary-color);
+        }
+
+        .placeholder {
+            color: var(--secondary-color);
+            border-bottom: 2px dashed var(--secondary-color);
+            padding: 0 10px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: var(--secondary-color);
+            background-color: #f0f8ff;
+        }
+
+        /* Zustandsfarben */
+        .correct {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border-color: var(--success-color) !important;
+        }
+
+        .incorrect {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border-color: var(--error-color) !important;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .main-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solution { background-color: var(--secondary-color); }
+        .main-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .target-sentence { font-size: 1.1em; }
+            .options-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Satz-Umwandlung</h1>
+
+    <div class="instruction">
+        <strong>Aufgabe:</strong> Wandeln Sie die Wortgruppe mit Genitiv in einen Satz mit einem Possessivadjektiv um. 
+        <br>Wählen Sie dazu das Wort aus, das in die Lücke passt.
+    </div>
+
+    <div id="exercise-list">
+        <!-- Inhalte werden per JS geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="main-btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="main-btn btn-solution" onclick="showAllSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const data = [
+        {
+            id: 1,
+            original: "Корабль капитана",
+            sentence: "Это <span class='placeholder' id='p-1'>_______</span> корабль.",
+            options: ["Капитанов", "Капитанев", "Капитаново"],
+            correct: "Капитанов"
+        },
+        {
+            id: 2,
+            original: "Телефон Андрея",
+            sentence: "Где <span class='placeholder' id='p-2'>_______</span> телефон?",
+            options: ["Андрейов", "Андреев", "Андреёв"],
+            correct: "Андреев"
+        },
+        {
+            id: 3,
+            original: "Гнездо соловья",
+            sentence: "Это <span class='placeholder' id='p-3'>_______</span> гнездо.",
+            options: ["Соловево", "Соловьево", "Соловьёво"],
+            correct: "Соловьёво"
+        },
+        {
+            id: 4,
+            original: "Машина отца",
+            sentence: "Вот <span class='placeholder' id='p-4'>_______</span> машина.",
+            options: ["Отцева", "Отцова", "Отцёва"],
+            correct: "Отцова"
+        },
+        {
+            id: 5,
+            original: "Книга Павла",
+            sentence: "Это <span class='placeholder' id='p-5'>_______</span> книга.",
+            options: ["Павлова", "Павелова", "Павлева"],
+            correct: "Павлова"
+        },
+        {
+            id: 6,
+            original: "Работа Алексея",
+            sentence: "Тяжёлая <span class='placeholder' id='p-6'>_______</span> работа.",
+            options: ["Алексеёва", "Алексеева", "Алексейова"],
+            correct: "Алексеева"
+        },
+        {
+            id: 7,
+            original: "Дом Петра",
+            sentence: "Это старый <span class='placeholder' id='p-7'>_______</span> дом.",
+            options: ["Пётров", "Петрев", "Петров"],
+            correct: "Петров"
+        },
+        {
+            id: 8,
+            original: "Друг Бориса",
+            sentence: "Он <span class='placeholder' id='p-8'>_______</span> друг.",
+            options: ["Борисев", "Борисов", "Борисёв"],
+            correct: "Борисов"
+        },
+        {
+            id: 9,
+            original: "Гитара Сергея",
+            sentence: "Где <span class='placeholder' id='p-9'>_______</span> гитара?",
+            options: ["Сергеева", "Сергейова", "Сергеёва"],
+            correct: "Сергеева"
+        },
+        {
+            id: 10,
+            original: "Сын Игоря",
+            sentence: "Это <span class='placeholder' id='p-10'>_______</span> сын.",
+            options: ["Игоров", "Игорев", "Игорёв"],
+            correct: "Игорев"
+        }
+    ];
+
+    function init() {
+        const list = document.getElementById('exercise-list');
+        list.innerHTML = '';
+        
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'transformation-item';
+            div.innerHTML = `
+                <span class="original-phrase">Genitiv: ${item.original}</span>
+                <span class="target-sentence">${item.sentence}</span>
+                <div class="options-grid" id="grid-${item.id}">
+                    ${item.options.map(opt => `
+                        <button class="option-btn" onclick="check(this, ${item.id}, '${item.correct}')">${opt}</button>
+                    `).join('')}
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    window.check = function(btn, id, correct) {
+        const grid = document.getElementById(`grid-${id}`);
+        const placeholder = document.getElementById(`p-${id}`);
+        const buttons = grid.querySelectorAll('.option-btn');
+        
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+        
+        if (btn.innerText === correct) {
+            btn.classList.add('correct');
+            placeholder.innerText = correct;
+            placeholder.style.color = "var(--success-color)";
+            placeholder.style.borderBottomColor = "var(--success-color)";
+        } else {
+            btn.classList.add('incorrect');
+            placeholder.innerText = "_______";
+            placeholder.style.color = "var(--secondary-color)";
+            placeholder.style.borderBottomColor = "var(--secondary-color)";
+        }
+    };
+
+    window.resetAll = function() {
+        init();
+    };
+
+    window.showAllSolutions = function() {
+        data.forEach(item => {
+            const grid = document.getElementById(`grid-${item.id}`);
+            const placeholder = document.getElementById(`p-${id = item.id}`);
+            const buttons = grid.querySelectorAll('.option-btn');
+            
+            buttons.forEach(b => {
+                b.classList.remove('incorrect');
+                if (b.innerText === item.correct) {
+                    b.classList.add('correct');
+                    placeholder.innerText = item.correct;
+                    placeholder.style.color = "var(--success-color)";
+                }
+            });
+        });
+    };
+
+    init();
+</script>
+
+</body>
+</html>
