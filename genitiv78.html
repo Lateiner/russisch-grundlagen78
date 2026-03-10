@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genitiv-Kette: Russisch Possessivadjektive</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1.5fr;
+            gap: 15px;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .chain-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1.5fr;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+
+        .chain-row:hover { background: #fafafa; }
+
+        .nominative {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--primary-color);
+        }
+
+        .arrow {
+            color: #95a5a6;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .option-btn {
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.2s;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .option-btn:hover { border-color: var(--secondary-color); }
+
+        /* Status-Farben */
+        .correct { 
+            background-color: var(--success-color) !important; 
+            color: white !important; 
+            border-color: var(--success-color) !important; 
+        }
+        .incorrect { 
+            background-color: var(--error-color) !important; 
+            color: white !important; 
+            border-color: var(--error-color) !important; 
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .main-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solution { background-color: var(--secondary-color); }
+        .main-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 768px) {
+            .header-row { display: none; }
+            .chain-row {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 10px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                margin-bottom: 15px;
+            }
+            .button-group {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .option-btn { flex: 1 1 40%; }
+            .arrow { display: block; transform: rotate(90deg); margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Die Genitiv-Kette</h1>
+
+    <div class="instruction">
+        <strong>Ziel:</strong> Wählen Sie den korrekten Genitiv und das daraus resultierende Possessivadjektiv aus. 
+        <br><em>Achten Sie auf die flüchtigen Vokale (z. B. Пётр → Петра).</em>
+    </div>
+
+    <div class="header-row">
+        <div>Nominativ</div>
+        <div>Genitiv Singular</div>
+        <div>Possessivadjektiv</div>
+    </div>
+
+    <div id="chain-container">
+        <!-- Inhalte werden per JS geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="main-btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="main-btn btn-solution" onclick="showAllSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const chainData = [
+        {
+            id: 1,
+            nom: "Павел",
+            genOptions: ["Павела", "Павла"],
+            genCorrect: "Павла",
+            adjOptions: ["Павлев", "Павлов"],
+            adjCorrect: "Павлов"
+        },
+        {
+            id: 2,
+            nom: "Пётр",
+            genOptions: ["Пётра", "Петра"],
+            genCorrect: "Петра",
+            adjOptions: ["Петров", "Пётров"],
+            adjCorrect: "Петров"
+        },
+        {
+            id: 3,
+            nom: "Отец",
+            genOptions: ["Отеца", "Отца"],
+            genCorrect: "Отца",
+            adjOptions: ["Отцов", "Отецев"],
+            adjCorrect: "Отцов"
+        },
+        {
+            id: 4,
+            nom: "Андрей",
+            genOptions: ["Андрея", "Андреа"],
+            genCorrect: "Андрея",
+            adjOptions: ["Андреев", "Андрейов"],
+            adjCorrect: "Андреев"
+        },
+        {
+            id: 5,
+            nom: "Соловей",
+            genOptions: ["Соловея", "Соловья"],
+            genCorrect: "Соловья",
+            adjOptions: ["Соловев", "Соловьёв"],
+            adjCorrect: "Соловьёв"
+        },
+        {
+            id: 6,
+            nom: "Игорь",
+            genOptions: ["Игора", "Игоря"],
+            genCorrect: "Игоря",
+            adjOptions: ["Игорев", "Игоров"],
+            adjCorrect: "Игорев"
+        },
+        {
+            id: 7,
+            nom: "Алексей",
+            genOptions: ["Алексея", "Алексея́"],
+            genCorrect: "Алексея",
+            adjOptions: ["Алексеев", "Алексейёв"],
+            adjCorrect: "Алексеев"
+        },
+        {
+            id: 8,
+            nom: "Муравей",
+            genOptions: ["Муравея", "Муравья"],
+            genCorrect: "Муравья",
+            adjOptions: ["Муравьев", "Муравьёв"],
+            adjCorrect: "Муравьёв"
+        },
+        {
+            id: 9,
+            nom: "Борис",
+            genOptions: ["Бориса", "Борися"],
+            genCorrect: "Бориса",
+            adjOptions: ["Борисов", "Борисев"],
+            adjCorrect: "Борисов"
+        },
+        {
+            id: 10,
+            nom: "Гончар",
+            genOptions: ["Гончаря", "Гончара"],
+            genCorrect: "Гончара", // Korrigiert: Rein kyrillisches 'а'
+            adjOptions: ["Гончаров", "Гончарев"],
+            adjCorrect: "Гончаров"
+        }
+    ];
+
+    function init() {
+        const container = document.getElementById('chain-container');
+        container.innerHTML = '';
+        
+        chainData.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'chain-row';
+            row.innerHTML = `
+                <div class="nominative">${item.nom} <span class="arrow">→</span></div>
+                
+                <div class="button-group" id="gen-group-${item.id}">
+                    ${item.genOptions.map(opt => `
+                        <button class="option-btn" onclick="check(this, '${item.genCorrect}')">${opt}</button>
+                    `).join('')}
+                </div>
+
+                <div class="button-group" id="adj-group-${item.id}">
+                    ${item.adjOptions.map(opt => `
+                        <button class="option-btn" onclick="check(this, '${item.adjCorrect}')">${opt}</button>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    window.check = function(btn, correct) {
+        const group = btn.parentElement;
+        const buttons = group.querySelectorAll('.option-btn');
+        
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+        
+        if (btn.innerText === correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+        }
+    };
+
+    window.resetAll = function() {
+        init();
+    };
+
+    window.showAllSolutions = function() {
+        chainData.forEach(item => {
+            const genGroup = document.getElementById(`gen-group-${item.id}`);
+            const adjGroup = document.getElementById(`adj-group-${item.id}`);
+            
+            highlight(genGroup, item.genCorrect);
+            highlight(adjGroup, item.adjCorrect);
+        });
+    };
+
+    function highlight(group, correctValue) {
+        const buttons = group.querySelectorAll('.option-btn');
+        buttons.forEach(b => {
+            b.classList.remove('incorrect');
+            if (b.innerText === correctValue) {
+                b.classList.add('correct');
+            } else {
+                b.classList.remove('correct');
+            }
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>
