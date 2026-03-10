@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vokabel-Lernkartei: Russisch</title>
+    <style>
+        :root {
+            --primary-green: #2e7d32;
+            --light-green: #e8f5e9;
+            --accent-green: #81c784;
+            --dark-green: #1b5e20;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --bg-color: #f1f8e9;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--dark-green);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--primary-green);
+        }
+
+        .progress {
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--primary-green);
+        }
+
+        /* Flashcard Styles */
+        .flashcard-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            margin: 0 auto 30px auto;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: var(--card-shadow);
+            border-radius: 15px;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: white;
+            border: 2px solid var(--accent-green);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background-color: var(--light-green);
+        }
+
+        .card-text {
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .controls-extra {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: var(--dark-green);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.secondary {
+            background-color: var(--accent-green);
+            color: white;
+        }
+
+        button.secondary:hover {
+            background-color: var(--primary-green);
+        }
+
+        .shortcuts-info {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        @media (max-width: 480px) {
+            .flashcard-wrapper { height: 250px; }
+            h1 { font-size: 1.4rem; }
+            button { padding: 10px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Lernkartei: Russisch</h1>
+    <div class="progress" id="progress">1 / 53</div>
+
+    <div class="flashcard-wrapper" id="card-trigger">
+        <div class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+                <div class="card-text" id="front-text">Lade...</div>
+            </div>
+            <div class="card-face card-back">
+                <div class="card-text" id="back-text">Lade...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="prev-btn">← Vorherige</button>
+        <button id="next-btn">Nächste →</button>
+    </div>
+    <div class="controls-extra">
+        <button class="secondary" id="home-btn">🏠 Anfang</button>
+        <button class="secondary" id="shuffle-btn">🔀 Mischen</button>
+    </div>
+
+    <div class="shortcuts-info">
+        Tastatur: Pfeiltasten (← →), Leertaste/Enter (Umdrehen), Pos1 (Anfang)
+    </div>
+</div>
+
+<script>
+    // Vokabeldaten
+    const vocabularyList = [
+        { front: "Алексе́й", back: "Alexej" },
+        { front: "Андре́й", back: "Andrej" },
+        { front: "Анто́н", back: "Anton" },
+        { front: "Бори́с", back: "Boris" },
+        { front: "Васи́лий", back: "Wassili" },
+        { front: "Ви́ктор", back: "Viktor" },
+        { front: "воробе́й", back: "Spatz" },
+        { front: "гонча́р", back: "Töpfer" },
+        { front: "дед", back: "Opa / Großvater" },
+        { front: "И́горь", back: "Igor" },
+        { front: "Ива́н", back: "Iwan" },
+        { front: "капита́н", back: "Kapitän" },
+        { front: "кузне́ц", back: "Schmied" },
+        { front: "Михаи́л", back: "Michail" },
+        { front: "мураве́й", back: "Ameise" },
+        { front: "Никола́й", back: "Nikolaj" },
+        { front: "оте́ц", back: "Vater" },
+        { front: "Па́вел", back: "Pawel" },
+        { front: "Пётр", back: "Peter" },
+        { front: "по́вар", back: "Koch" },
+        { front: "поп", back: "Priester" },
+        { front: "Серге́й", back: "Sergej" },
+        { front: "снеги́рь", back: "Gimpel / Dompfaff" },
+        { front: "солове́й", back: "Nachtigall" },
+        { front: "авто́", back: "Auto" },
+        { front: "ве́щи", back: "Sachen / Dinge" },
+        { front: "велосипе́д", back: "Fahrrad" },
+        { front: "гита́ра", back: "Gitarre" },
+        { front: "гнездо́", back: "Nest" },
+        { front: "дом", back: "Haus" },
+        { front: "кни́га", back: "Buch" },
+        { front: "корм", back: "Futter" },
+        { front: "кре́сло", back: "Sessel" },
+        { front: "маши́на", back: "Auto / Wagen" },
+        { front: "мяч", back: "Ball" },
+        { front: "нож", back: "Messer" },
+        { front: "ноутбу́к", back: "Laptop" },
+        { front: "письмо́", back: "Brief" },
+        { front: "рабо́та", back: "Arbeit" },
+        { front: "слова́рь", back: "Wörterbuch" },
+        { front: "телефо́н", back: "Telefon" },
+        { front: "оконча́ние", back: "Endung" },
+        { front: "паде́ж", back: "Fall / Kasus" },
+        { front: "притяжа́тельное прилага́тельное", back: "Possessivadjektiv" },
+        { front: "роди́тельный паде́ж", back: "Genitiv" },
+        { front: "су́ффикс", back: "Suffix" },
+        { front: "понима́ть / поня́ть", back: "verstehen" },
+        { front: "писа́ть / написа́ть", back: "schreiben" },
+        { front: "отвеча́ть / отве́тить", back: "antworten" },
+        { front: "спра́шивать / спроси́ть", back: "fragen" },
+        { front: "образо́вывать / образова́ть", back: "bilden" },
+        { front: "учи́ть / вы́учить", back: "lernen / auswendig lernen" },
+        { front: "по́льзоваться / воспо́льзоваться", back: "benutzen / gebrauchen" }
+    ];
+
+    let currentStack = [...vocabularyList];
+    let index = 0;
+
+    // DOM Elemente
+    const flashcard = document.getElementById('flashcard');
+    const frontText = document.getElementById('front-text');
+    const backText = document.getElementById('back-text');
+    const progressText = document.getElementById('progress');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const shuffleBtn = document.getElementById('shuffle-btn');
+    const homeBtn = document.getElementById('home-btn');
+    const cardTrigger = document.getElementById('card-trigger');
+
+    // Funktion zur Schriftgrößenanpassung
+    function adjustFontSize(text, element) {
+        const length = text.length;
+        if (length > 40) {
+            element.style.fontSize = "1.1rem";
+        } else if (length > 20) {
+            element.style.fontSize = "1.5rem";
+        } else {
+            element.style.fontSize = "2.2rem";
+        }
+    }
+
+    function updateDisplay() {
+        flashcard.classList.remove('flipped');
+        const currentCard = currentStack[index];
+        
+        // Front Text
+        frontText.textContent = currentCard.front;
+        adjustFontSize(currentCard.front, frontText);
+        
+        // Back Text
+        backText.textContent = currentCard.back;
+        adjustFontSize(currentCard.back, backText);
+
+        // Progress
+        progressText.textContent = `${index + 1} / ${currentStack.length}`;
+    }
+
+    function flipCard() {
+        flashcard.classList.toggle('flipped');
+    }
+
+    function nextCard() {
+        if (index < currentStack.length - 1) {
+            index++;
+            updateDisplay();
+        }
+    }
+
+    function prevCard() {
+        if (index > 0) {
+            index--;
+            updateDisplay();
+        }
+    }
+
+    function goToStart() {
+        index = 0;
+        updateDisplay();
+    }
+
+    function shuffleStack() {
+        for (let i = currentStack.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [currentStack[i], currentStack[j]] = [currentStack[j], currentStack[i]];
+        }
+        goToStart();
+    }
+
+    // Button Events
+    cardTrigger.addEventListener('click', flipCard);
+    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); nextCard(); });
+    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prevCard(); });
+    homeBtn.addEventListener('click', (e) => { e.stopPropagation(); goToStart(); });
+    shuffleBtn.addEventListener('click', (e) => { e.stopPropagation(); shuffleStack(); });
+
+    // Keyboard Events
+    document.addEventListener('keydown', (e) => {
+        if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            flipCard();
+        } else if (e.key === "ArrowRight") {
+            nextCard();
+        } else if (e.key === "ArrowLeft") {
+            prevCard();
+        } else if (e.key === "Home") {
+            goToStart();
+        }
+    });
+
+    // Initialisierung
+    updateDisplay();
+</script>
+
+</body>
+</html>
