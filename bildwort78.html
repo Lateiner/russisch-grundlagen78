@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bild-Wort-Zuordnung: 12 Aufgaben</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        /* Wort-Pool */
+        .pool-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            text-align: center;
+        }
+
+        #word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: #f9f9f9;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            min-height: 80px;
+            margin-bottom: 30px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .draggable {
+            background: var(--secondary-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.3s;
+        }
+
+        .draggable:active { cursor: grabbing; }
+
+        /* Zuordnungs-Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .drop-card {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .visual-box {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: #f0f4f8;
+            width: 100%;
+            padding: 15px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            min-height: 45px;
+            line-height: 1.3;
+        }
+
+        .target-zone {
+            width: 100%;
+            min-height: 55px;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .target-zone.drag-over {
+            background: #e1f5fe;
+            border-color: var(--secondary-color);
+        }
+
+        /* Feedback */
+        .is-correct { background-color: var(--success-color) !important; color: white; border: none; }
+        .is-incorrect { background-color: var(--error-color) !important; color: white; border: none; }
+
+        .card-controls {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--secondary-color); }
+        .btn:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Bild-Wort-Zuordnung: 12 Aufgaben</h1>
+
+    <div class="instruction">
+        <strong>Aufgabe:</strong> Schauen Sie sich die Symbole (Besitzer + Objekt) an. Ziehen Sie die passende russische Wortgruppe aus dem Pool in das jeweilige Feld. 
+        <br>Das Feedback (Grün/Rot) erfolgt sofort beim Ablegen.
+    </div>
+
+    <span class="pool-title">Wort-Pool:</span>
+    <div id="word-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Wörter werden per JS geladen -->
+    </div>
+
+    <div class="grid" id="drop-grid">
+        <!-- Karten werden per JS geladen -->
+    </div>
+</div>
+
+<script>
+    const data = [
+        { id: 1, owner: "Vater (Отец)", object: "Auto (авто)", visual: "👨+🚗", answer: "Отцово авто" },
+        { id: 2, owner: "Kapitän (Капитан)", object: "Schiff (корабль)", visual: "👨‍✈️+🚢", answer: "Капитанов корабль" },
+        { id: 3, owner: "Koch (Повар)", object: "Messer (нож)", visual: "👨‍🍳+🔪", answer: "Поваров нож" },
+        { id: 4, owner: "Nachtigall (Соловей)", object: "Nest (гнездо)", visual: "🐦+🪹", answer: "Соловьёво гнеzдо" }, // Fix below
+        { id: 5, owner: "Andrej (Андрей)", object: "Telefon (телефон)", visual: "👦+📱", answer: "Андреев телефон" },
+        { id: 6, owner: "Pavel (Павел)", object: "Buch (книга)", visual: "👨+📖", answer: "Павлова книга" },
+        { id: 7, owner: "Aleksej (Алексей)", object: "Gitarre (гитара)", visual: "🎸+👨", answer: "Алексеева гитара" },
+        { id: 8, owner: "Peter (Пётр)", object: "Haus (дом)", visual: "🏠+👨", answer: "Петров дом" },
+        { id: 9, owner: "Igor (Игорь)", object: "Laptop (ноутбук)", visual: "💻+👨", answer: "Игорев ноутбук" },
+        { id: 10, owner: "Sergej (Сергей)", object: "Fahrrad (велосипед)", visual: "🚲+👨", answer: "Сергеев велосипед" },
+        { id: 11, owner: "Sperling (Воробей)", object: "Futter (корм)", visual: "🐦+🥣", answer: "Воробьёв корм" },
+        { id: 12, owner: "Iwan (Иван)", object: "Ball (мяч)", visual: "⚽+👦", answer: "Иванов мяч" }
+    ];
+
+    // Korrektur für Rechtschreibung in Daten
+    data[3].answer = "Соловьёво гнездо";
+
+    function init() {
+        const pool = document.getElementById('word-pool');
+        const grid = document.getElementById('drop-grid');
+        pool.innerHTML = '';
+        grid.innerHTML = '';
+
+        // Pool mischen
+        const poolWords = data.map(d => d.answer).sort(() => Math.random() - 0.5);
+        poolWords.forEach((word, index) => {
+            const div = document.createElement('div');
+            div.className = 'draggable';
+            div.id = 'word-' + index;
+            div.draggable = true;
+            div.innerText = word;
+            div.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+            pool.appendChild(div);
+        });
+
+        // Grid aufbauen
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'drop-card';
+            card.innerHTML = `
+                <div class="visual-box">${item.visual}</div>
+                <div class="label"><strong>${item.owner}</strong><br>${item.object}</div>
+                <div class="target-zone" id="zone-${item.id}" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                <div class="card-controls">
+                    <button class="btn btn-reset" onclick="resetCard(${item.id})">Reset</button>
+                    <button class="btn btn-solve" onclick="solveCard(${item.id})">Lösung</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    window.allowDrop = (e) => {
+        e.preventDefault();
+        if (e.currentTarget.classList.contains('target-zone')) {
+            e.currentTarget.classList.add('drag-over');
+        }
+    };
+
+    window.drop = (e) => {
+        e.preventDefault();
+        const zone = e.currentTarget;
+        zone.classList.remove('drag-over');
+
+        const wordId = e.dataTransfer.getData("text");
+        const draggedEl = document.getElementById(wordId);
+        if (!draggedEl) return;
+
+        // Falls die Zone schon besetzt ist, altes Wort zurück in den Pool
+        if (zone.children.length > 0 && zone.classList.contains('target-zone')) {
+            document.getElementById('word-pool').appendChild(zone.children[0]);
+        }
+
+        zone.appendChild(draggedEl);
+
+        // Feedback-Check
+        if (zone.classList.contains('target-zone')) {
+            const id = zone.id.split('-')[1];
+            const item = data.find(d => d.id == id);
+            
+            draggedEl.classList.remove('is-correct', 'is-incorrect');
+            if (draggedEl.innerText === item.answer) {
+                draggedEl.classList.add('is-correct');
+            } else {
+                draggedEl.classList.add('is-incorrect');
+            }
+        } else {
+            // Falls zurück in den Pool gezogen
+            draggedEl.classList.remove('is-correct', 'is-incorrect');
+        }
+    };
+
+    window.resetCard = (id) => {
+        const zone = document.getElementById(`zone-${id}`);
+        if (zone.children.length > 0) {
+            const word = zone.children[0];
+            word.classList.remove('is-correct', 'is-incorrect');
+            document.getElementById('word-pool').appendChild(word);
+        }
+    };
+
+    window.solveCard = (id) => {
+        const item = data.find(d => d.id == id);
+        const zone = document.getElementById(`zone-${id}`);
+        
+        // Finde das korrekte Wort-Element (egal wo es gerade ist)
+        const draggables = document.querySelectorAll('.draggable');
+        let correctEl = Array.from(draggables).find(el => el.innerText === item.answer);
+
+        if (correctEl) {
+            // Falls es in einer anderen Zone war, diese leeren
+            if (correctEl.parentElement.classList.contains('target-zone')) {
+                correctEl.parentElement.innerHTML = '';
+            }
+            zone.innerHTML = '';
+            zone.appendChild(correctEl);
+            correctEl.classList.remove('is-incorrect');
+            correctEl.classList.add('is-correct');
+        }
+    };
+
+    // Spiel initialisieren
+    init();
+</script>
+
+</body>
+</html>
