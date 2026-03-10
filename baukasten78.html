@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wort-Baukasten: Russisch Possessivadjektive</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .instruction {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            line-height: 1.5;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .task-card {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .target-phrase {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            display: block;
+            text-align: center;
+        }
+
+        /* Wort-Vorschau */
+        .preview-area {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            align-items: center;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .preview-part {
+            font-size: 1.6em;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 6px;
+            background: #f9f9f9;
+            min-width: 50px;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Bausteine Grid */
+        .builder-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .column-title {
+            text-align: center;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .block-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .block {
+            padding: 10px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .block:hover {
+            border-color: var(--secondary-color);
+            background: #f0f8ff;
+        }
+
+        .block.selected {
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        /* Feedback-Zustände */
+        .task-card.is-correct { 
+            border-color: var(--success-color); 
+            background-color: #f0fff4; 
+        }
+        .task-card.is-correct .preview-part { 
+            background-color: var(--success-color); 
+            color: white; 
+            border-color: var(--success-color); 
+        }
+        
+        .task-card.is-incorrect { 
+            border-color: var(--error-color); 
+            background-color: #fff5f5; 
+        }
+        .task-card.is-incorrect .preview-part { 
+            background-color: var(--error-color); 
+            color: white; 
+            border-color: var(--error-color); 
+        }
+
+        /* Buttons pro Aufgabe */
+        .task-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85em;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-solve { background-color: var(--secondary-color); }
+        .btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .builder-grid { grid-template-columns: 1fr; }
+            .preview-part { font-size: 1.2em; }
+            .task-card { padding: 15px; }
+            .task-controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Wort-Baukasten: 10 Aufgaben</h1>
+
+    <div class="instruction">
+        <strong>Ziel:</strong> Bauen Sie das passende Possessivadjektiv zusammen. 
+        Klicken Sie in jeder Spalte einen Baustein an. Sobald das Wort vollständig ist, erhalten Sie sofort ein Feedback: 
+        <span style="color:var(--success-color); font-weight:bold;">Grün = Richtig</span>, 
+        <span style="color:var(--error-color); font-weight:bold;">Rot = Falsch</span>.
+    </div>
+
+    <div id="exercise-list"></div>
+</div>
+
+<script>
+    const exercises = [
+        {
+            id: 1,
+            target: "Das Haus von Iwan (Иван)",
+            correct: { b: "Иван", s: "ов", e: "∅" },
+            options: { b: ["Иван", "Иванa", "Иваня"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "о"] }
+        },
+        {
+            id: 2,
+            target: "Das Auto von Vater (Отец)",
+            correct: { b: "Отц", s: "ов", e: "а" },
+            options: { b: ["Отец", "Отц", "Отч"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "о"] }
+        },
+        {
+            id: 3,
+            target: "Das Buch von Pavel (Павел)",
+            correct: { b: "Павл", s: "ов", e: "а" },
+            options: { b: ["Павел", "Павл", "Павле"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "ы"] }
+        },
+        {
+            id: 4,
+            target: "Das Telefon von Andrej (Андрей)",
+            correct: { b: "Андре", s: "ев", e: "∅" },
+            options: { b: ["Андрей", "Андре", "Андря"], s: ["ов", "ев", "ёв"], e: ["∅", "о", "ы"] }
+        },
+        {
+            id: 5,
+            target: "Die Sachen von Igor (Игорь)",
+            correct: { b: "Игор", s: "ев", e: "ы" },
+            options: { b: ["Игорь", "Игор", "Игоря"], s: ["ов", "ев", "ёв"], e: ["а", "о", "ы"] }
+        },
+        {
+            id: 6,
+            target: "Das Nest der Nachtigall (Соловей)",
+            correct: { b: "Соловь", s: "ёв", e: "о" },
+            options: { b: ["Солове", "Соловь", "Соловя"], s: ["ов", "ев", "ёв"], e: ["а", "о", "ы"] }
+        },
+        {
+            id: 7,
+            target: "Der Rat des Kochs (Повар)",
+            correct: { b: "Повар", s: "ов", e: "∅" },
+            options: { b: ["Повар", "Поваря", "Повра"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "о"] }
+        },
+        {
+            id: 8,
+            target: "Der Stuhl von Pjotr (Пётр)",
+            correct: { b: "Петр", s: "ов", e: "∅" },
+            options: { b: ["Пётр", "Петр", "Петра"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "о"] }
+        },
+        {
+            id: 9,
+            target: "Die Idee von Aleksej (Алексей)",
+            correct: { b: "Алексе", s: "ев", e: "а" },
+            options: { b: ["Алексей", "Алексе", "Алекся"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "ы"] }
+        },
+        {
+            id: 10,
+            target: "Die Arbeit der Ameise (Муравей)",
+            correct: { b: "Муравь", s: "ёв", e: "а" },
+            options: { b: ["Мураве", "Муравь", "Муравья"], s: ["ов", "ев", "ёв"], e: ["∅", "а", "о"] }
+        }
+    ];
+
+    let userChoices = {};
+
+    function renderExercises() {
+        const list = document.getElementById('exercise-list');
+        list.innerHTML = '';
+        
+        exercises.forEach(ex => {
+            userChoices[ex.id] = { b: null, s: null, e: null };
+            
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.id = `card-${ex.id}`;
+            
+            card.innerHTML = `
+                <span class="target-phrase">${ex.target}</span>
+                <div class="preview-area">
+                    <div class="preview-part" id="p-b-${ex.id}">?</div>
+                    <div class="preview-part" id="p-s-${ex.id}">?</div>
+                    <div class="preview-part" id="p-e-${ex.id}">?</div>
+                </div>
+                <div class="builder-grid">
+                    <div class="block-list">
+                        <div class="column-title">Basis</div>
+                        ${ex.options.b.map(opt => `<div class="block" onclick="makeChoice(${ex.id}, 'b', '${opt}', this)">${opt}</div>`).join('')}
+                    </div>
+                    <div class="block-list">
+                        <div class="column-title">Suffix</div>
+                        ${ex.options.s.map(opt => `<div class="block" onclick="makeChoice(${ex.id}, 's', '${opt}', this)">${opt}</div>`).join('')}
+                    </div>
+                    <div class="block-list">
+                        <div class="column-title">Endung</div>
+                        ${ex.options.e.map(opt => `<div class="block" onclick="makeChoice(${ex.id}, 'e', '${opt}', this)">${opt}</div>`).join('')}
+                    </div>
+                </div>
+                <div class="task-controls">
+                    <button class="btn btn-reset" onclick="resetTask(${ex.id})">Zurücksetzen</button>
+                    <button class="btn btn-solve" onclick="solveTask(${ex.id})">Lösung anzeigen</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    window.makeChoice = function(taskId, col, val, el) {
+        const card = document.getElementById(`card-${taskId}`);
+        
+        // Auswahl in der Spalte markieren
+        const parent = el.parentElement;
+        parent.querySelectorAll('.block').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+
+        // Wert speichern und Vorschau aktualisieren
+        userChoices[taskId][col] = val;
+        document.getElementById(`p-${col}-${taskId}`).innerText = val;
+
+        // Feedback prüfen, wenn alle drei Teile gewählt wurden
+        const current = userChoices[taskId];
+        if (current.b !== null && current.s !== null && current.e !== null) {
+            const correct = exercises.find(ex => ex.id === taskId).correct;
+            
+            card.classList.remove('is-correct', 'is-incorrect');
+            if (current.b === correct.b && current.s === correct.s && current.e === correct.e) {
+                card.classList.add('is-correct');
+            } else {
+                card.classList.add('is-incorrect');
+            }
+        }
+    };
+
+    window.resetTask = function(taskId) {
+        userChoices[taskId] = { b: null, s: null, e: null };
+        const card = document.getElementById(`card-${taskId}`);
+        card.classList.remove('is-correct', 'is-incorrect');
+        card.querySelectorAll('.block').forEach(b => b.classList.remove('selected'));
+        card.querySelectorAll('.preview-part').forEach(p => p.innerText = '?');
+    };
+
+    window.solveTask = function(taskId) {
+        const ex = exercises.find(e => e.id === taskId);
+        const card = document.getElementById(`card-${taskId}`);
+        
+        userChoices[taskId] = { ...ex.correct };
+        
+        // Vorschau füllen
+        document.getElementById(`p-b-${taskId}`).innerText = ex.correct.b;
+        document.getElementById(`p-s-${taskId}`).innerText = ex.correct.s;
+        document.getElementById(`p-e-${taskId}`).innerText = ex.correct.e;
+
+        // Richtige Blöcke markieren
+        const columns = card.querySelectorAll('.block-list');
+        ['b', 's', 'e'].forEach((col, idx) => {
+            const targetVal = ex.correct[col];
+            columns[idx].querySelectorAll('.block').forEach(b => {
+                b.classList.remove('selected');
+                if (b.innerText === targetVal) b.classList.add('selected');
+            });
+        });
+
+        card.classList.remove('is-incorrect');
+        card.classList.add('is-correct');
+    };
+
+    // Spiel starten
+    renderExercises();
+</script>
+
+</body>
+</html>
